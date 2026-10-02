@@ -79,6 +79,13 @@ export default function HomePage() {
               <ArrowRight className="w-5 h-5 text-slate-400 group-hover:text-amber-600 group-hover:translate-x-1 transition" />
             </Link>
           </div>
+
+          <p className="text-xs text-slate-500 pt-2">
+            New to campus?{' '}
+            <Link href="/login?mode=register" className="font-semibold text-brand-600 hover:text-brand-700 underline underline-offset-2">
+              Create a student account &rarr;
+            </Link>
+          </p>
         </div>
       </section>
 

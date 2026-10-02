@@ -48,6 +48,15 @@ export function AuthProvider({ children }) {
     throw new Error(res.message || 'Login failed');
   };
 
+  const register = async (name, college_id, password, role = 'student') => {
+    const res = await api.register({ name, college_id, password, role });
+    if (res.success) {
+      // Automatically log in newly created user
+      return await login(college_id, password, role);
+    }
+    throw new Error(res.message || 'Registration failed');
+  };
+
   const logout = () => {
     setUser(null);
     setToken(null);
@@ -57,7 +66,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

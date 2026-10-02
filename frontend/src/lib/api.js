@@ -39,6 +39,7 @@ export async function apiRequest(endpoint, options = {}) {
 export const api = {
   // Auth
   login: (credentials) => apiRequest('/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),
+  register: (userData) => apiRequest('/auth/register', { method: 'POST', body: JSON.stringify(userData) }),
   getMe: () => apiRequest('/auth/me'),
 
   // Student
