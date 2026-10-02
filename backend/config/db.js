@@ -13,7 +13,10 @@ const DB_CONFIG = {
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  connectTimeout: 2000
+  connectTimeout: 10000,
+  ssl: (process.env.DB_SSL === 'true' || (process.env.DB_HOST && process.env.DB_HOST !== 'localhost'))
+    ? { rejectUnauthorized: false }
+    : undefined
 };
 
 let dbMode = 'mysql'; // 'mysql' or 'sqlite'
@@ -106,15 +109,18 @@ const db = {
 async function initDB() {
   // First try MySQL connection
   try {
-    const tempPool = mysql.createPool({
-      ...DB_CONFIG,
-      database: undefined // connect without DB first to ensure canteen_db exists
-    });
-
-    const conn = await tempPool.getConnection();
-    await conn.query(`CREATE DATABASE IF NOT EXISTS \`${DB_CONFIG.database}\`;`);
-    conn.release();
-    await tempPool.end();
+    try {
+      const tempPool = mysql.createPool({
+        ...DB_CONFIG,
+        database: undefined // try creating database if on local or root
+      });
+      const conn = await tempPool.getConnection();
+      await conn.query(`CREATE DATABASE IF NOT EXISTS \`${DB_CONFIG.database}\`;`);
+      conn.release();
+      await tempPool.end();
+    } catch (createErr) {
+      // In cloud providers like Aiven, database already exists and user lacks CREATE DATABASE privilege
+    }
 
     mysqlPool = mysql.createPool(DB_CONFIG);
     const testConn = await mysqlPool.getConnection();
