@@ -1,8 +1,20 @@
 const mysql = require('mysql2/promise');
-const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fs = require('fs');
 require('dotenv').config();
+
+let sqlite3 = null;
+function getSqlite() {
+  if (!sqlite3) {
+    try {
+      sqlite3 = require('sqlite3').verbose();
+    } catch (err) {
+      console.warn('[Database] SQLite driver could not be loaded:', err.message);
+      return null;
+    }
+  }
+  return sqlite3;
+}
 
 const DB_CONFIG = {
   host: process.env.DB_HOST || 'localhost',
@@ -26,7 +38,11 @@ let sqliteDb = null;
 // SQLite compatibility wrapper
 class SQLitePool {
   constructor(dbPath) {
-    this.db = new sqlite3.Database(dbPath);
+    const mod = getSqlite();
+    if (!mod) {
+      throw new Error('SQLite driver not available in this environment');
+    }
+    this.db = new mod.Database(dbPath);
   }
 
   async query(sql, params = []) {
